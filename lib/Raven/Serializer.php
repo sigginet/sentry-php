@@ -79,7 +79,7 @@ class Raven_Serializer
         return $this->serializeValue($value);
     }
 
-    protected function serializeString($value)
+    protected function serializeString($value, $message_limit = Raven_Client::MESSAGE_LIMIT)
     {
         $value = (string) $value;
         if (function_exists('mb_detect_encoding')
@@ -93,8 +93,8 @@ class Raven_Serializer
             }
         }
 
-        if (strlen($value) > 1024) {
-            $value = substr($value, 0, 1014) . ' {clipped}';
+        if (strlen($value) > $message_limit) {
+            $value = substr($value, 0, $message_limit - 10) . ' {clipped}';
         }
 
         return $value;
@@ -102,9 +102,10 @@ class Raven_Serializer
 
     /**
      * @param mixed $value
+     * @param int   $message_limit
      * @return string|bool|double|int|null
      */
-    protected function serializeValue($value)
+    protected function serializeValue($value, $message_limit = Raven_Client::MESSAGE_LIMIT)
     {
         if (is_null($value) || is_bool($value) || is_float($value) || is_integer($value)) {
             return $value;
@@ -115,7 +116,7 @@ class Raven_Serializer
         } elseif (is_array($value)) {
             return 'Array of length ' . count($value);
         } else {
-            return $this->serializeString($value);
+            return $this->serializeString($value, $message_limit);
         }
     }
 
